@@ -15,4 +15,10 @@ typedef struct {
   double double_field;
 } record;
 
+void **load_file(char *filename);
+
+void write_sorted_record(void **records, char *filename);
+
+void free_records(record **record);
+
 #endif //RECORD_LOADER_H

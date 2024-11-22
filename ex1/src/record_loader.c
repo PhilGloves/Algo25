@@ -4,10 +4,10 @@
 
 #include "record.h"
 
-void** load_file(char* filename) {
-  FILE* file = fopen(filename, "r");
+void **load_file(char *filename) {
+  FILE *file = fopen(filename, "r");
   if (file == NULL) {
-    printf("Error opening file\n");
+    printf("Error opening input file\n");
     return NULL;
   }
 
@@ -39,6 +39,18 @@ void** load_file(char* filename) {
   RECORD_COUNTER = record_count;
 
   return records;
+}
+
+void write_sorted_record(void **records, char *filename) {
+  FILE *file = fopen(filename, "a");
+  if (file == NULL) {
+    printf("Error opening output file\n");
+    return;
+  }
+
+  for (int i = 0; i < RECORD_COUNTER; i++) {
+    fprintf(file, "%d,%s,%d,%f\n", records[i]->id, records[i]->char_field, records[i]->int_field, records[i]->float_field);
+  }
 }
 
 void* create_record(int id, char *char_field, int int_field, float float_field) {
