@@ -15,9 +15,9 @@ typedef struct {
   double double_field;
 } record;
 
-void **load_file(char *filename);
+void **load_file(FILE *infile);
 
-void write_sorted_record(void **records, char *filename);
+void write_sorted_record(void **records, FILE *outfile);
 
 void free_records(record **record);
 
