@@ -1,6 +1,6 @@
-#include "../include/sorter.h"
-#include <stdio.h>
 #include <stdlib.h>
+
+#include "sorter.h"
 
 void merge_sort(void **base, size_t nitems, int (*compar)(const void*, const void*)){
   size_t nitemsLeft, nitemsRight;

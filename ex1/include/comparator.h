@@ -5,6 +5,6 @@ int str_compare(const void *a, const void *b);
 
 int int_compare(const void *a, const void *b);
 
-int float_compare(const void *a, const void *b);
+int double_compare(const void *a, const void *b);
 
 #endif //COMPARATOR_H

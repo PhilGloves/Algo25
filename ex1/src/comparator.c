@@ -1,5 +1,7 @@
 #include <string.h>
-#include <stdlib.h>
+
+#include "comparator.h"
+#include "record_loader.h"
 
 int str_compare(const void *a, const void *b) {
   char *x = ((record *)a)->char_field;
@@ -13,8 +15,8 @@ int int_compare(const void *a, const void *b) {
   return x>y ? 1 : x<y ? -1 : 0;
 }
 
-int float_compare(const void *a, const void *b) {
-  float x = ((record *)a)->float_field;
-  float y = ((record *)b)->float_field;
+int double_compare(const void *a, const void *b) {
+  double x = ((record *)a)->double_field;
+  double y = ((record *)b)->double_field;
   return x>y ? 1 : x<y ? -1 : 0;
 }
