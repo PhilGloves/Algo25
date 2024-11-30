@@ -6,10 +6,8 @@
 #include <string.h>
 #include <limits.h>
 
-#define RECORD_READ_LIMIT 1000
+#define RECORD_READ_LIMIT 5000000
 //#define RECORD_READ_LIMIT INT_MAX
-
-#define RECORD_COUNTER 0
 
 typedef struct {
   int id;
@@ -18,14 +16,12 @@ typedef struct {
   double double_field;
 } record;
 
-void **load_file(FILE *infile);
+record **load_file(FILE *infile, long *record_count);
 
-void write_sorted_record(void **records, FILE *outfile);
+void write_sorted_record(FILE *outfile, record **sorted_records, long record_count);
 
-void free_records(record **record);
+void free_records(record **record, long record_count);
 
-void *create_record(int id, char *char_field, int int_field, double double_field);
-
-
+record *create_record(int id, char *char_field, int int_field, double double_field);
 
 #endif //RECORD_LOADER_H

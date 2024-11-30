@@ -2,6 +2,10 @@
 
 #include "sorter.h"
 
+#include <record_loader.h>
+
+#include "comparator.h"
+
 void merge_sort(void **base, size_t nitems, int (*compar)(const void*, const void*)){
   size_t nitemsLeft, nitemsRight;
 
@@ -21,8 +25,7 @@ void merge_sort(void **base, size_t nitems, int (*compar)(const void*, const voi
     merge_sort(rightBase, nitemsRight, compar);
 
     merge(base, rightBase, nitemsLeft, nitemsRight, compar);
-  } else
-    return;
+  }
 }
 
 void quick_sort(void **base, size_t nitems, int (*compar)(const void*, const void*)){

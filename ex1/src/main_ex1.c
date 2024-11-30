@@ -9,14 +9,15 @@
 
 void sort_records(FILE *infile, FILE *outfile, size_t field, size_t algo) {
 
+  long record_count = 0;
   clock_t begin_read = clock();
-  record **records = load_file(infile);
+  record **records = load_file(infile, &record_count);
   clock_t end_read = clock();
 
-  clock_t elapsed_read = (end_read - begin_read) / CLOCKS_PER_SEC;
-  printf("Time taken by reading records %ld seconds\n", elapsed_read);
+  double elapsed_read = (double)(end_read - begin_read) / CLOCKS_PER_SEC;
+  printf("Time taken by reading records %.3f seconds\n", elapsed_read);
 
-  int (*compar)(void *, void *);
+  int (*compar)(const void*, const void*);
 
   switch (field) {
     case 1:
@@ -28,34 +29,38 @@ void sort_records(FILE *infile, FILE *outfile, size_t field, size_t algo) {
     case 3:
       compar = double_compare;
       break;
+    default:
+      printf("Something is wrong with field parameter\n");
   }
 
-  printf("Start sorting %d records\n", RECORD_COUNTER);
+  printf("Start sorting %ld records\n", record_count);
   clock_t begin_sort = clock();
 
   switch (algo) {
     case 1:
-      merge_sort(records, RECORD_COUNTER, compar);
+      merge_sort((void **)records, record_count, compar);
       break;
     case 2:
-      quick_sort(records, RECORD_COUNTER, compar);
+      quick_sort((void **)records, record_count, compar);
       break;
+    default:
+      printf("Something is wrong with algo parameter\n");
   }
 
   clock_t end_sort = clock();
 
-  clock_t elapsed_sort = (end_sort - begin_sort ) / CLOCKS_PER_SEC;
-  printf("Time taken by sorting records %ld seconds\n", elapsed_sort);
+  double elapsed_sort = (double)(end_sort - begin_sort ) / CLOCKS_PER_SEC;
+  printf("Time taken by sorting records %.3f seconds\n", elapsed_sort);
 
 
   clock_t begin_write = clock();
-  write_sorted_record(records, outfile);
+  write_sorted_record(outfile, records, record_count);
   clock_t end_write = clock();
 
-  clock_t elapsed_write = (end_write - begin_write) / CLOCKS_PER_SEC;
-  printf("Time taken by writing records %ld seconds\n", elapsed_write);
+  double elapsed_write = (double)(end_write - begin_write) / CLOCKS_PER_SEC;
+  printf("Time taken by writing records %.3f seconds\n", elapsed_write);
 
-  free_records(records);
+  free_records(records, record_count);
 
 }
 
@@ -68,8 +73,8 @@ int main(int argc, char *argv[]) {
 
   char *infile_name = argv[1];
   char *outfile_name = argv[2];
-  size_t field_num = _atoi64(argv[3]);
-  size_t algo_num = _atoi64(argv[4]);
+  size_t field_num = atoi(argv[3]);
+  size_t algo_num = atoi(argv[4]);
 
   if(0==field_num || field_num>=4) {
     printf("Available field: 1->string 2->int 3->double\nSelected field: %llu\n", field_num);

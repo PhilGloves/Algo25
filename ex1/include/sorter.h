@@ -2,6 +2,7 @@
 #define SORTER_H
 
 #include <stdio.h>
+#include "comparator.h"
 
 void merge_sort(void **base, size_t nitems, int (*compar)(const void*, const void*));
 
