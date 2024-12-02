@@ -36,6 +36,9 @@ record **load_file(FILE *infile, long *record_count) {
     records[*record_count-1] = create_record(id, char_field, int_field, double_field);
     free(char_field);
   }
+
+  records = realloc(records, *record_count * sizeof(void *));
+
   printf("Loaded %ld records\n", *record_count);
   return records;
 }
