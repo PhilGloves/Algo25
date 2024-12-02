@@ -1,0 +1,5 @@
+*.csv
+*.o
+*.exe
+ex1/bin
+ex1/obj

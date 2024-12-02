@@ -5,10 +5,10 @@
 
 #include "record_loader.h"
 
-record **load_file(FILE *infile, long *record_count) {
+Record **load_file(FILE *infile, long *record_count) {
 
   size_t capacity = 10;
-  record **records = malloc(capacity * sizeof(void *));
+  Record **records = malloc(capacity * sizeof(void *));
 
   char buffer[1024];
   const char *sep = ",";
@@ -43,14 +43,14 @@ record **load_file(FILE *infile, long *record_count) {
   return records;
 }
 
-void write_sorted_record(FILE *outfile, record **sorted_records, long record_count) {
+void write_sorted_record(FILE *outfile, Record **sorted_records, long record_count) {
   for (int i = 0; i < record_count; i++) {
     fprintf(outfile, "%d,%s,%d,%f\n", sorted_records[i]->id, sorted_records[i]->char_field, sorted_records[i]->int_field, sorted_records[i]->double_field);
   }
 }
 
-record *create_record(int id, char *char_field, int int_field, double double_field) {
-  record *record_p = malloc(sizeof(record));
+Record *create_record(int id, char *char_field, int int_field, double double_field) {
+  Record *record_p = malloc(sizeof(Record));
   record_p->id = id;
   record_p->char_field = strdup(char_field);
   record_p->int_field = int_field;
@@ -58,7 +58,7 @@ record *create_record(int id, char *char_field, int int_field, double double_fie
   return record_p;
 }
 
-void free_records(record **records, long record_count) {
+void free_records(Record **records, long record_count) {
   for (int i = 0; i < record_count; i++) {
     free(records[i]->char_field);
     free(records[i]);

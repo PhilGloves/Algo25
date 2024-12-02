@@ -7,11 +7,24 @@
 #include "comparator.h"
 #include "sorter.h"
 
+/**
+* @brief Sort the Records in the input file and write the sorted record on the output file
+*
+* @param infile Input file
+* @param outfile Output file
+* @param field Number of the field with which the records are sorted
+* -1 : String field
+* -2 : Int field
+* -3 : Double field
+* @param algo Number of the algorithm with which the records are sorted
+* -1 : Merge sort
+* -2 : Quick sort
+ */
 void sort_records(FILE *infile, FILE *outfile, size_t field, size_t algo) {
 
   long record_count = 0;
   clock_t begin_read = clock();
-  record **records = load_file(infile, &record_count);
+  Record **records = load_file(infile, &record_count);
   clock_t end_read = clock();
 
   double elapsed_read = (double)(end_read - begin_read) / CLOCKS_PER_SEC;
@@ -64,6 +77,15 @@ void sort_records(FILE *infile, FILE *outfile, size_t field, size_t algo) {
 
 }
 
+/**
+* @brief Main function that determine the sort_record parameters, taken from the arguments
+* - Argument 1 : input file path
+* - Argument 2 : output file path
+* - Argument 3 : number of the field with which the records are sorted
+* - Argument 4 : number of the algorithm with which the records are sorted
+*
+* @note The output file is created or opened on write mode (its content will be deleted before the sorting begins)
+ */
 int main(int argc, char *argv[]) {
 
   if (argc != 5) {
