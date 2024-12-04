@@ -3,3 +3,5 @@
 *.exe
 ex1/bin
 ex1/obj
+ex1/docs/html
+ex1/docs/latex
