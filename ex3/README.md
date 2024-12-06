@@ -4,7 +4,9 @@ Libreria generica su hash table concatenate e tutte le funzioni da generare, for
 ### Output
 Libreria completa, fornito il codice dei file ".c" e ".h" commentato.
 
-__File: hash_table.h__
+<details>
+  <summary>File hash_table.h</summary>
+
 ```
 #ifndef HASH_TABLE_H
 #define HASH_TABLE_H
@@ -39,8 +41,10 @@ void hash_table_free(HashTable*);
 
 #endif // HASH_TABLE_H
 ```
+</details>
 
-__File: hash_table.c__
+<details>
+  <summary>File: hash_table.c</summary>
 
 ```
 #include "hash_table.h"
@@ -155,13 +159,14 @@ free(table->buckets);
 free(table);
 }
 ```
+</details>
 
 Da notare che nel input fornito la funzione di creazione della hash table non aveva dei parametri con un nome esplicativo, il LLM gli ha dato la giusta interpretazione.
 Il codice fornito soddisfa le richieste della traccia, anche se è possibile notare :
 
 - una mancanza di gestione degli errori
 - una capacità iniziale, alla creazione della hash table che non puoi scegliere
-- una possibile cattiva gestione della memoria dovuta al free che non libera la memoria occupata dai valori (<chiave,valore>) e anche della chiave (es. una coppia <string,string>)
+- una possibile cattiva gestione della memoria dovuta al free che non libera la memoria occupata dai valori (<chiave,valore>) e anche della chiave (es. una coppia <struct,struct>)
 ---
 ## Iterazione 2
 Dati i possibili errori, chiedo in maniera generica come sarebbe possibile migliorare la libreria appena generata.
@@ -174,6 +179,10 @@ Come notato alla fine della prima iterazione, il LLM ha dato suggerimenti su:
 - Error handling: Restituire valori indicativi per verificare errori o stati della struttura.
 
 __Nuovo file header :__
+
+<details>
+  <summary>File hash_table.h</summary>
+
 ```
 // Struttura modificata
 typedef struct HashTable {
@@ -203,6 +212,7 @@ void** hash_table_keyset(const HashTable*, size_t* count);          // Array di 
 void hash_table_resize(HashTable*);                                 // Ridimensiona dinamicamente
 void hash_table_free(HashTable*);                                   // Libera memoria
 ```
+</details>
 
 __Funzioni modificate :__
 <details>
@@ -476,3 +486,445 @@ Le modifiche sono corrette, ma ha imposto un limite di elementi inseribili nel c
 ### Input
 Puoi scrivere la libreria togliendo il limite di elementi che puoi aggiungere in base alla capacità(nella funzione put) e inserire una funzione che ti permetta in qualsiasi momento di modificare la capacità?
 ### Output
+<details>
+  <summary>File hash_table.h</summary>
+
+```
+#ifndef HASH_TABLE_H
+#define HASH_TABLE_H
+
+#include <stdlib.h>
+#include <stdbool.h>
+
+// Nodo della lista concatenata per un bucket
+typedef struct HashNode {
+    void* key;
+    void* value;
+    struct HashNode* next;
+} HashNode;
+
+// Struttura principale della hash table
+typedef struct HashTable {
+    HashNode** buckets;               // Array di bucket
+    int capacity;                     // Numero di bucket
+    int size;                         // Numero di elementi attualmente presenti
+    bool allow_resize;                // Consente il ridimensionamento
+    int (*compare_keys)(const void*, const void*);
+    unsigned long (*hash_func)(const void*);
+    void (*free_key)(void*);
+    void (*free_value)(void*);
+} HashTable;
+
+// Funzioni principali
+HashTable* hash_table_create(
+    int initial_capacity,
+    bool allow_resize,
+    int (*compare_keys)(const void*, const void*),
+    unsigned long (*hash_func)(const void*),
+    void (*free_key)(void*),
+    void (*free_value)(void*)
+);
+
+int hash_table_put(HashTable* table, const void* key, const void* value);
+void* hash_table_get(const HashTable* table, const void* key);
+int hash_table_contains_key(const HashTable* table, const void* key);
+void hash_table_remove(HashTable* table, const void* key);
+int hash_table_size(const HashTable* table);
+void** hash_table_keyset(const HashTable* table);
+void hash_table_free(HashTable* table);
+
+// Nuova funzione: Ridimensionamento forzato della tabella
+int hash_table_resize_to(HashTable* table, int new_capacity);
+
+#endif // HASH_TABLE_H
+```
+</details>
+
+<details>
+  <summary>File hash_table.c</summary>
+
+```
+#include "hash_table.h"
+#include <string.h>
+#include <stdio.h>
+
+// Funzione per creare una nuova hash table
+HashTable* hash_table_create(
+    int initial_capacity,
+    bool allow_resize,
+    int (*compare_keys)(const void*, const void*),
+    unsigned long (*hash_func)(const void*),
+    void (*free_key)(void*),
+    void (*free_value)(void*)
+) {
+    if (initial_capacity <= 0 || !compare_keys || !hash_func) {
+        return NULL;
+    }
+
+    HashTable* table = malloc(sizeof(HashTable));
+    if (!table) return NULL;
+
+    table->capacity = initial_capacity;
+    table->size = 0;
+    table->allow_resize = allow_resize;
+    table->compare_keys = compare_keys;
+    table->hash_func = hash_func;
+    table->free_key = free_key;
+    table->free_value = free_value;
+    table->buckets = calloc(table->capacity, sizeof(HashNode*));
+    if (!table->buckets) {
+        free(table);
+        return NULL;
+    }
+
+    return table;
+}
+
+// Funzione per ridimensionare la tabella hash
+static int resize_table_internal(HashTable* table, int new_capacity) {
+    if (new_capacity <= 0 || new_capacity < table->size) {
+        return -1; // Capacità non valida
+    }
+
+    HashNode** new_buckets = calloc(new_capacity, sizeof(HashNode*));
+    if (!new_buckets) return -1;
+
+    for (int i = 0; i < table->capacity; i++) {
+        HashNode* current = table->buckets[i];
+        while (current) {
+            unsigned long new_index = table->hash_func(current->key) % new_capacity;
+            HashNode* next = current->next;
+
+            current->next = new_buckets[new_index];
+            new_buckets[new_index] = current;
+            current = next;
+        }
+    }
+
+    free(table->buckets);
+    table->buckets = new_buckets;
+    table->capacity = new_capacity;
+
+    return 0;
+}
+
+// Funzione pubblica per ridimensionare a una capacità desiderata
+int hash_table_resize_to(HashTable* table, int new_capacity) {
+    if (!table) return -1;
+    return resize_table_internal(table, new_capacity);
+}
+
+// Inserisce o aggiorna un elemento nella hash table
+int hash_table_put(HashTable* table, const void* key, const void* value) {
+    if (!table || !key) return -1;
+
+    // Ridimensiona se necessario
+    if (table->allow_resize && (float)table->size / table->capacity > 0.75) {
+        resize_table_internal(table, table->capacity * 2);
+    }
+
+    unsigned long index = table->hash_func(key) % table->capacity;
+    HashNode* current = table->buckets[index];
+
+    while (current) {
+        if (table->compare_keys(current->key, key) == 0) {
+            if (table->free_value) table->free_value(current->value);
+            current->value = (void*)value;
+            return 0;
+        }
+        current = current->next;
+    }
+
+    HashNode* new_node = malloc(sizeof(HashNode));
+    if (!new_node) return -1;
+    new_node->key = (void*)key;
+    new_node->value = (void*)value;
+    new_node->next = table->buckets[index];
+    table->buckets[index] = new_node;
+    table->size++;
+
+    return 0;
+}
+
+// Ottiene un valore dalla hash table
+void* hash_table_get(const HashTable* table, const void* key) {
+    if (!table || !key) return NULL;
+
+    unsigned long index = table->hash_func(key) % table->capacity;
+    HashNode* current = table->buckets[index];
+
+    while (current) {
+        if (table->compare_keys(current->key, key) == 0) {
+            return current->value;
+        }
+        current = current->next;
+    }
+    return NULL;
+}
+
+// Verifica se una chiave esiste nella tabella
+int hash_table_contains_key(const HashTable* table, const void* key) {
+    return hash_table_get(table, key) != NULL;
+}
+
+// Rimuove un elemento dalla hash table
+void hash_table_remove(HashTable* table, const void* key) {
+    if (!table || !key) return;
+
+    unsigned long index = table->hash_func(key) % table->capacity;
+    HashNode* current = table->buckets[index];
+    HashNode* prev = NULL;
+
+    while (current) {
+        if (table->compare_keys(current->key, key) == 0) {
+            if (prev) {
+                prev->next = current->next;
+            } else {
+                table->buckets[index] = current->next;
+            }
+
+            if (table->free_key) table->free_key(current->key);
+            if (table->free_value) table->free_value(current->value);
+            free(current);
+            table->size--;
+            return;
+        }
+        prev = current;
+        current = current->next;
+    }
+}
+
+// Ritorna il numero di elementi nella tabella
+int hash_table_size(const HashTable* table) {
+    return table ? table->size : 0;
+}
+
+// Ritorna tutte le chiavi come array
+void** hash_table_keyset(const HashTable* table) {
+    if (!table || table->size == 0) return NULL;
+
+    void** keys = malloc(table->size * sizeof(void*));
+    if (!keys) return NULL;
+
+    int index = 0;
+    for (int i = 0; i < table->capacity; i++) {
+        HashNode* current = table->buckets[i];
+        while (current) {
+            keys[index++] = current->key;
+            current = current->next;
+        }
+    }
+    return keys;
+}
+
+// Libera la memoria della hash table
+void hash_table_free(HashTable* table) {
+    if (!table) return;
+
+    for (int i = 0; i < table->capacity; i++) {
+        HashNode* current = table->buckets[i];
+        while (current) {
+            HashNode* next = current->next;
+            if (table->free_key) table->free_key(current->key);
+            if (table->free_value) table->free_value(current->value);
+            free(current);
+            current = next;
+        }
+    }
+
+    free(table->buckets);
+    free(table);
+}
+```
+</details>
+
+Il codice fornito ora sembra soddisfare tutte le richieste e offre varie possibilità di personalizzazione.
+Adesso procedo con scrivere il codice e testarlo con unit test che creerò nella prossima iterazione grazie al LLM.
+
+___
+
+## Iterazione 5
+
+### Input
+Scrivi degli unit test per testare ogni funzione della libreria in "modalità" diverse quindi utilizzando o no le funzioni di free e allow_resize. gli unit test devono essere fatti grazie alla libreria unity e devono essere fatti su situazione "particolari".
+### Output
+
+<details>
+  <summary>File test_ex3.c</summary>
+
+```
+#include "unity.h"
+#include "hash_table.h"
+#include <string.h>
+#include <stdlib.h>
+
+// Funzioni di supporto per il test
+static int compare_keys(const void* a, const void* b) {
+    return strcmp((const char*)a, (const char*)b);
+}
+
+static unsigned long hash_func(const void* key) {
+    const char* str = (const char*)key;
+    unsigned long hash = 5381;
+    int c;
+    while ((c = *str++))
+        hash = ((hash << 5) + hash) + c; // hash * 33 + c
+    return hash;
+}
+
+static void free_key(void* key) {
+    free(key);
+}
+
+static void free_value(void* value) {
+    free(value);
+}
+
+// Variabili per i test
+HashTable* table;
+
+// Test di setup
+void setUp(void) {
+    // Viene chiamato prima di ogni test
+}
+
+// Test di teardown
+void tearDown(void) {
+    // Viene chiamato dopo ogni test
+    if (table) {
+        hash_table_free(table);
+        table = NULL;
+    }
+}
+
+// Test della creazione della hash table
+void test_create_table_no_resize_no_free(void) {
+    table = hash_table_create(10, false, compare_keys, hash_func, NULL, NULL);
+    TEST_ASSERT_NOT_NULL(table);
+    TEST_ASSERT_EQUAL(10, table->capacity);
+    TEST_ASSERT_EQUAL(0, table->size);
+    TEST_ASSERT_FALSE(table->allow_resize);
+}
+
+void test_create_table_with_resize_and_free(void) {
+    table = hash_table_create(5, true, compare_keys, hash_func, free_key, free_value);
+    TEST_ASSERT_NOT_NULL(table);
+    TEST_ASSERT_EQUAL(5, table->capacity);
+    TEST_ASSERT_EQUAL(0, table->size);
+    TEST_ASSERT_TRUE(table->allow_resize);
+}
+
+// Test dell'inserimento con chiavi duplicate
+void test_put_duplicate_key(void) {
+    table = hash_table_create(10, false, compare_keys, hash_func, free_key, free_value);
+    hash_table_put(table, strdup("key1"), strdup("value1"));
+    hash_table_put(table, strdup("key1"), strdup("value2")); // Sovrascrive "value1"
+
+    TEST_ASSERT_EQUAL(1, hash_table_size(table));
+    char* value = hash_table_get(table, "key1");
+    TEST_ASSERT_NOT_NULL(value);
+    TEST_ASSERT_EQUAL_STRING("value2", value);
+}
+
+// Test dell'inserimento con ridimensionamento
+void test_put_with_resize(void) {
+    table = hash_table_create(2, true, compare_keys, hash_func, NULL, NULL);
+    hash_table_put(table, "key1", "value1");
+    hash_table_put(table, "key2", "value2");
+    hash_table_put(table, "key3", "value3"); // Triggers resize
+
+    TEST_ASSERT_EQUAL(4, table->capacity);
+    TEST_ASSERT_EQUAL(3, hash_table_size(table));
+    TEST_ASSERT_EQUAL_STRING("value1", hash_table_get(table, "key1"));
+    TEST_ASSERT_EQUAL_STRING("value2", hash_table_get(table, "key2"));
+    TEST_ASSERT_EQUAL_STRING("value3", hash_table_get(table, "key3"));
+}
+
+// Test del ridimensionamento forzato
+void test_resize_to(void) {
+    table = hash_table_create(5, false, compare_keys, hash_func, NULL, NULL);
+    hash_table_put(table, "key1", "value1");
+    hash_table_put(table, "key2", "value2");
+
+    TEST_ASSERT_EQUAL(5, table->capacity);
+    TEST_ASSERT_EQUAL(2, hash_table_size(table));
+
+    hash_table_resize_to(table, 10);
+
+    TEST_ASSERT_EQUAL(10, table->capacity);
+    TEST_ASSERT_EQUAL(2, hash_table_size(table));
+    TEST_ASSERT_EQUAL_STRING("value1", hash_table_get(table, "key1"));
+    TEST_ASSERT_EQUAL_STRING("value2", hash_table_get(table, "key2"));
+}
+
+// Test del keyset
+void test_keyset(void) {
+    table = hash_table_create(10, false, compare_keys, hash_func, NULL, NULL);
+    hash_table_put(table, "key1", "value1");
+    hash_table_put(table, "key2", "value2");
+
+    void** keys = hash_table_keyset(table);
+    TEST_ASSERT_NOT_NULL(keys);
+
+    int found_key1 = 0, found_key2 = 0;
+    for (int i = 0; i < 2; i++) {
+        if (strcmp((const char*)keys[i], "key1") == 0) found_key1 = 1;
+        if (strcmp((const char*)keys[i], "key2") == 0) found_key2 = 1;
+    }
+
+    TEST_ASSERT_TRUE(found_key1);
+    TEST_ASSERT_TRUE(found_key2);
+    free(keys);
+}
+
+// Test della rimozione
+void test_remove(void) {
+    table = hash_table_create(10, false, compare_keys, hash_func, free_key, free_value);
+    hash_table_put(table, strdup("key1"), strdup("value1"));
+    hash_table_put(table, strdup("key2"), strdup("value2"));
+
+    TEST_ASSERT_EQUAL(2, hash_table_size(table));
+
+    hash_table_remove(table, "key1");
+    TEST_ASSERT_EQUAL(1, hash_table_size(table));
+    TEST_ASSERT_NULL(hash_table_get(table, "key1"));
+    TEST_ASSERT_NOT_NULL(hash_table_get(table, "key2"));
+}
+
+// Test dell'accesso a chiavi non esistenti
+void test_get_non_existent_key(void) {
+    table = hash_table_create(10, false, compare_keys, hash_func, NULL, NULL);
+    TEST_ASSERT_NULL(hash_table_get(table, "key1"));
+}
+
+// Test del comportamento con capacità insufficiente
+void test_put_over_capacity_no_resize(void) {
+    table = hash_table_create(2, false, compare_keys, hash_func, NULL, NULL);
+    hash_table_put(table, "key1", "value1");
+    hash_table_put(table, "key2", "value2");
+
+    // Il terzo inserimento non deve essere permesso
+    int result = hash_table_put(table, "key3", "value3");
+    TEST_ASSERT_EQUAL(-1, result);
+    TEST_ASSERT_EQUAL(2, hash_table_size(table));
+}
+
+int main(void) {
+    UNITY_BEGIN();
+
+    RUN_TEST(test_create_table_no_resize_no_free);
+    RUN_TEST(test_create_table_with_resize_and_free);
+    RUN_TEST(test_put_duplicate_key);
+    RUN_TEST(test_put_with_resize);
+    RUN_TEST(test_resize_to);
+    RUN_TEST(test_keyset);
+    RUN_TEST(test_remove);
+    RUN_TEST(test_get_non_existent_key);
+    RUN_TEST(test_put_over_capacity_no_resize);
+
+    return UNITY_END();
+}
+```
+</details>
+
+I test generati 
