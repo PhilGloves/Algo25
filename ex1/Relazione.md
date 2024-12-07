@@ -1,0 +1,1 @@
+bin/main_ex1 dataset/records.csv dataset/sorted.csv  1 1

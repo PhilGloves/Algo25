@@ -927,4 +927,17 @@ int main(void) {
 ```
 </details>
 
-I test generati 
+La serie di test generati vengono eseguiti correttamente e testano varie funzionalità della libreria. L'unico test che fallisce è l'ultimo, perchè non ha tenuto in memoria il cambiamento che ho richiesto nella scorsa iterazione, rendendo il test inutile.
+
+Ora tolgo il test inutile e ne aggiungo di significativi.
+
+___
+
+## Conclusioni
+
+La libreria ha subito una evoluzione significativa sia in termini di funzionalità che di robustezza, il processo di creazione è stato semplice e con la necessità di pochi input, lasciando alla interpretazione del LLM vari elementi non definiti.
+Non si sono presentate problematiche gravi durante le iterazioni, sebbene una volta non abbia memorizzato il cambiamento richiesto e un'altra volta ha inserito un limite non richiesto e solitamente non utilizzato.
+Questo genere di errori potrebbero essere sempre più frequenti man mano che la grandezza del codice richiesto aumenta, dato che il contesto e le conoscenze che deve avere sono tante.
+I LLM si presentano quindi molto utili al supporto alla programmazione a patto che si abbia una conoscenza dell'argomento e si sappia riconoscere gli errori.
+
+In questo esercizio è stato utilizzato esclusivamente ChatGPT, tutti gli input sono stati forniti sulla stessa chat.
