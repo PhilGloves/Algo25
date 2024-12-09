@@ -19,7 +19,7 @@
 * @param algo Number of the algorithm with which the records are sorted
 * -1 : Merge sort
 * -2 : Quick sort
- */
+*/
 void sort_records(FILE *infile, FILE *outfile, size_t field, size_t algo) {
 
   long record_count = 0;
@@ -100,10 +100,12 @@ int main(int argc, char *argv[]) {
 
   if(0==field_num || field_num>=4) {
     printf("Available field: 1->string 2->int 3->double\nSelected field: %llu\n", field_num);
+    return 1;
   }
 
   if(0==algo_num || algo_num>=3) {
     printf("Available algorithm: 1->merge sort 2->quick sort\nSelected algorithm: %llu\n", field_num);
+    return 1;
   }
 
   FILE *infile = fopen(infile_name, "r");
