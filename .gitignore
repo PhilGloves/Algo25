@@ -1,7 +1,8 @@
 *.csv
 *.o
 *.exe
-ex1/bin
-ex1/obj
-ex1/docs/html
-ex1/docs/latex
+ex?/bin
+ex?/obj
+ex?/dataset
+ex?/docs/html
+ex?/docs/latex

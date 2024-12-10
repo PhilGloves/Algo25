@@ -1,7 +1,11 @@
+#include <stdio.h>
+
 #include "unity.h"
 #include "hash_table.h"
 #include <string.h>
 #include <stdlib.h>
+
+#include "unity_internals.h"
 
 // Funzioni di supporto per il test
 static int compare_keys(const void* a, const void* b) {
@@ -142,17 +146,58 @@ void test_get_non_existent_key(void) {
     TEST_ASSERT_NULL(hash_table_get(table, "key1"));
 }
 
-// Test del comportamento con capacità insufficiente
-void test_put_over_capacity_no_resize(void) {
-    table = hash_table_create(2, false, compare_keys, hash_func, NULL, NULL);
+void test_stress(void) {
+    table = hash_table_create(100, true, compare_keys, hash_func, free_key, free_value);
+
+    // Inserimento di molti elementi
+    for (int i = 0; i < 1000; i++) {
+        char* key = malloc(20);
+        char* value = malloc(20);
+        snprintf(key, 20, "key%d", i);
+        snprintf(value, 20, "value%d", i);
+        hash_table_put(table, key, value);
+    }
+
+    TEST_ASSERT_EQUAL(1000, hash_table_size(table));
+
+    // Rimozione di alcuni elementi
+    for (int i = 0; i < 500; i++) {
+        char key[20];
+        snprintf(key, 20, "key%d", i);
+        hash_table_remove(table, key);
+    }
+
+    TEST_ASSERT_EQUAL(500, hash_table_size(table));
+}
+
+void test_null_keys_and_values(void) {
+    table = hash_table_create(10, false, compare_keys, hash_func, NULL, NULL);
+
+    // Inserimento di una chiave NULL
+    int result = hash_table_put(table, NULL, "value1");
+    TEST_ASSERT_EQUAL(-1, result);
+
+    // Inserimento di un valore NULL
+    result = hash_table_put(table, "key1", NULL);
+    TEST_ASSERT_EQUAL(0, result);
+    TEST_ASSERT_NULL(hash_table_get(table, "key1"));
+}
+
+void test_resize_to_minimum(void) {
+    table = hash_table_create(10, true, compare_keys, hash_func, NULL, NULL);
+
     hash_table_put(table, "key1", "value1");
     hash_table_put(table, "key2", "value2");
 
-    // Il terzo inserimento non deve essere permesso
-    int result = hash_table_put(table, "key3", "value3");
-    TEST_ASSERT_EQUAL(-1, result);
-    TEST_ASSERT_EQUAL(2, hash_table_size(table));
+    // Ridimensioniamo a una capacità minima
+    int result = hash_table_resize_to(table, 1);
+    TEST_ASSERT_EQUAL(-1, result); // Non dovrebbe essere possibile ridurre sotto il numero di elementi
+
+    TEST_ASSERT_EQUAL(10, table->capacity); // La capacità non dovrebbe cambiare
+    TEST_ASSERT_EQUAL_STRING("value1", hash_table_get(table, "key1"));
+    TEST_ASSERT_EQUAL_STRING("value2", hash_table_get(table, "key2"));
 }
+
 
 int main(void) {
     UNITY_BEGIN();
@@ -165,7 +210,9 @@ int main(void) {
     RUN_TEST(test_keyset);
     RUN_TEST(test_remove);
     RUN_TEST(test_get_non_existent_key);
-    RUN_TEST(test_put_over_capacity_no_resize);
+    RUN_TEST(test_stress);
+    RUN_TEST(test_null_keys_and_values);
+    RUN_TEST(test_resize_to_minimum);
 
     return UNITY_END();
 }

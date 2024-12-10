@@ -23,4 +23,4 @@ L'unica eccezione riguarda l'ordinamento delle stringhe, che nel caso del quick 
 Il risultato non è quello che ci si aspettava, sia dal punto di vista dei tempi così distanti, sia da quello di esecuzione, dato che dopo i due milioni di record, durante l'ordinamento, l'esecuzione si blocca.
 Il comportamento è anomalo dato che l'esecuzione termina producendo l'output corretto fino ai due milioni di record. Detto ciò un motivo possibile è un problema nell'utilizzo della memoria, che non è stato possibile definire.
 
-Hardware utilizzato per i test : intel i5-1335U , scheda grafica integrata, 16gb ram , 1tb ssd
+Hardware utilizzato per i test : intel i5-1335U , scheda grafica integrata , 16gb ram , 1tb ssd
