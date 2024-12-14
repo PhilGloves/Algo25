@@ -1340,4 +1340,4 @@ Non si sono presentate problematiche gravi durante le iterazioni, sebbene una vo
 Questo genere di errori potrebbero essere sempre più frequenti man mano che la grandezza del codice richiesto aumenta, dato che il contesto e le conoscenze che deve avere memorizzate sono tante.
 I LLM si presentano quindi molto utili al supporto alla programmazione a patto che si abbia una conoscenza dell'argomento e si sappia riconoscere gli errori. 
 
-In questo esercizio è stato utilizzato esclusivamente ChatGPT, tutti gli input, escluso quello dell'iterazione 6, sono stati forniti sulla stessa chat.
+In questo esercizio è stato utilizzato esclusivamente ChatGPT, tutti gli input, esclusi quelli dell'iterazione 6 ed extra, sono stati forniti sulla stessa chat.

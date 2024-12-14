@@ -6,8 +6,8 @@
 #include <string.h>
 #include <limits.h>
 
-//#define RECORD_READ_LIMIT 20000000
-#define RECORD_READ_LIMIT INT_MAX
+#define RECORD_READ_LIMIT 5000000
+//#define RECORD_READ_LIMIT INT_MAX
 
 /**
 * @brief Definition of the struct for the records
