@@ -1,6 +1,9 @@
 #include "edit_distance.h"
 
 int main(int argc, char *argv[]) {
-    printf("%d", edit_distance("casa", "cassa"));
+    const char *s1 = "tassa";
+    const char *s2 = "passato";
+    int distance = edit_distance_dyn(s1, s2);
+    printf("Edit distance between '%s' and '%s' is %d\n", str1, str2, distance);
     return 0;
 }
