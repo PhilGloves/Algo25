@@ -107,9 +107,6 @@ void hash_table_remove(HashTable* table, const void* key) {
                 table->buckets[hash] = current->next;
             }
 
-            // Libera il nodo
-            free(current->key);
-            free(current->value);
             free(current);
             table->size--;
             return;
@@ -148,8 +145,6 @@ void hash_table_free(HashTable* table) {
             HashNode* temp = current;
             current = current->next;
 
-            free(temp->key);
-            free(temp->value);
             free(temp); // Liberare anche key/value se necessario
         }
     }
