@@ -12,7 +12,6 @@
 typedef struct HashNode {
     void* key;                  /**< The key associated with the value. */
     void* value;                /**< The value associated with the key. */
-    unsigned long cached_hash;  /**< The hash assigned at the key when inserted in the table*/
     struct HashNode* next;      /**< Pointer to the next node in the list. */
 } HashNode;
 

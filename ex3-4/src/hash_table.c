@@ -4,39 +4,45 @@
 
 // Funzione di creazione della tavola hash
 HashTable* hash_table_create(int (*f1)(const void*, const void*), unsigned long (*f2)(const void*)) {
-HashTable* table = malloc(sizeof(HashTable));
-table->capacity = 16; // Capacità iniziale
-table->size = 0;
-table->buckets = calloc(table->capacity, sizeof(HashNode*));
-table->compare_keys = f1;
-table->hash_func = f2;
-return table;
+    HashTable* table = malloc(sizeof(HashTable));
+    table->capacity = 16; // Capacità iniziale
+    table->size = 0;
+    table->buckets = calloc(table->capacity, sizeof(HashNode*));
+    for (int i = 0; i < table->capacity; i++) {
+        table->buckets[i] = NULL;
+    }
+    table->compare_keys = f1;
+    table->hash_func = f2;
+    return table;
 }
 
 static void hash_table_resize(HashTable* table) {
-    size_t new_capacity = table->capacity * 2;
+    int old_capacity = table->capacity;
+    HashNode** old_buckets = table->buckets;
+
+    int new_capacity = table->capacity * 2;
     HashNode** new_buckets = calloc(new_capacity, sizeof(HashNode*));
     if (!new_buckets) return; // Fallisce silenziosamente per semplicità
+    for (int i = 0; i < new_capacity; i++) {
+        new_buckets[i] = NULL;
+    }
 
-    for (size_t i = 0; i < table->capacity; i++) {
+    table->capacity = new_capacity;
+    table->buckets = new_buckets;
+    table->size = 0;
+
+    for (size_t i = 0; i < old_capacity; i++) {
         HashNode* current = table->buckets[i];
-        while (current) {
-            // Ricalcola l'hash per la nuova capacità
-            size_t new_index = current->cached_hash % new_capacity;
-            HashNode* next = current->next;
-
-            // Inserisce il nodo nella nuova tabella
-            current->next = new_buckets[new_index];
-            new_buckets[new_index] = current;
-
-            current = next;
+        while (current != NULL) {
+            hash_table_put(table, current->key, current->value);
+            HashNode* inserted_node = current;
+            current = current->next;
+            free(inserted_node);
         }
     }
 
     // Libera i vecchi bucket e aggiorna la tabella
-    free(table->buckets);
-    table->buckets = new_buckets;
-    table->capacity = new_capacity;
+    free(old_buckets);
 }
 
 // Funzione per inserire un elemento
@@ -64,7 +70,6 @@ void hash_table_put(HashTable* table, const void* key, const void* value) {
     if (!new_node) return; // Gestione del fallimento dell'allocazione
     new_node->key = (void*)key;
     new_node->value = (void*)value;
-    new_node->cached_hash = hash;
     new_node->next = table->buckets[index];
     table->buckets[index] = new_node;
     table->size++;
@@ -77,7 +82,7 @@ void* hash_table_get(const HashTable* table, const void* key) {
     unsigned long hash = table->hash_func(key) % table->capacity;
     HashNode* current = table->buckets[hash];
 
-    while (current) {
+    while (current != NULL) {
         if (table->compare_keys(current->key, key) == 0) {
             return current->value;
         }
@@ -99,9 +104,9 @@ void hash_table_remove(HashTable* table, const void* key) {
     HashNode* current = table->buckets[hash];
     HashNode* prev = NULL;
 
-    while (current) {
+    while (current != NULL) {
         if (table->compare_keys(current->key, key) == 0) {
-            if (prev) {
+            if (prev != NULL) {
                 prev->next = current->next;
             } else {
                 table->buckets[hash] = current->next;
@@ -128,7 +133,7 @@ void** hash_table_keyset(const HashTable* table) {
 
     for (size_t i = 0; i < table->capacity; i++) {
         HashNode* current = table->buckets[i];
-        while (current) {
+        while (current != NULL) {
             keys[index++] = current->key;
             current = current->next;
         }
@@ -145,7 +150,7 @@ void hash_table_free(HashTable* table) {
             HashNode* temp = current;
             current = current->next;
 
-            free(temp); // Liberare anche key/value se necessario
+            free(temp); 
         }
     }
 
