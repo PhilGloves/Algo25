@@ -1,11 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-/**
- * Header file containing the definition of INT_MAX, which represents 
- * the maximum value for a signed 32-bit integer.
- */
 #include <limits.h>
 
 #include "edit_distance.h"
