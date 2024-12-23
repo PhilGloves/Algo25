@@ -1,6 +1,7 @@
 *.csv
 *.o
 *.exe
+*.txt
 ex?/bin
 ex?/obj
 ex?/dataset
