@@ -23,31 +23,31 @@ typedef struct {
 * @brief Create an array of Records from a file
 *
 * @param infile Pointer to the file
-* @param record_count Pointer to a counter, this counter is only updated, when this function return, this counter contain the number of records
+* @param record_count Pointer to a counter only updated when this function returns. It contains the number of records
 *
 * @return An array of Records
 */
 Record **load_file(FILE *infile, long *record_count);
 
 /**
-* @brief Write the Records from the array to the file
+* @brief Writes the Records from the array to the file
 *
 * @param outfile Pointer to the file
 * @param sorted_records Array of Records
-* @param record_count Number of element in the array
+* @param record_count Number of elements in the array
 */
 void write_sorted_record(FILE *outfile, Record **sorted_records, long record_count);
 
 /**
-* @brief Free the memory allocated by the array of Records
+* @brief Frees the memory allocated by the Records Array
 *
 * @param record Array of Records
-* @param record_count Number of element in the array
+* @param record_count Number of elements in the array
 */
 void free_records(Record **record, long record_count);
 
 /**
-* @brief Create a Record
+* @brief Creates a Record
 *
 * @param id Record's id
 * @param char_field Record's string field

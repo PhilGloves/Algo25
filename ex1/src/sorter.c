@@ -43,7 +43,6 @@ void merge(void **leftBase, void **rightBase, size_t nitemsLeft, size_t nitemsRi
   void **temp = malloc((nitemsLeft + nitemsRight) * sizeof(void *));
 
   while (i < nitemsLeft && j < nitemsRight) {
-    //a ccompar passo un puntatore
     if (compar(leftBase[i], rightBase[j]) >= 0) {
       temp[k] = rightBase[j];
       k++;
