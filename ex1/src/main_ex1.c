@@ -8,15 +8,15 @@
 #include "sorter.h"
 
 /**
-* @brief Sort the Records in the input file and write the sorted record on the output file
+* @brief Sorts the Records in the input file and writes the sorted record on the output file
 *
 * @param infile Input file
 * @param outfile Output file
-* @param field Number of the field with which the records are sorted
+* @param field The field number by which the records are sorted
 * -1 : String field
 * -2 : Int field
 * -3 : Double field
-* @param algo Number of the algorithm with which the records are sorted
+* @param algo The algorithm number used to sort the records
 * -1 : Merge sort
 * -2 : Quick sort
 */
@@ -78,11 +78,11 @@ void sort_records(FILE *infile, FILE *outfile, size_t field, size_t algo) {
 }
 
 /**
-* @brief Main function that determine the sort_record parameters, taken from the arguments
+* @brief Main function that determines the sort_record parameters, taken from the arguments
 * - Argument 1 : input file path
 * - Argument 2 : output file path
-* - Argument 3 : number of the field with which the records are sorted
-* - Argument 4 : number of the algorithm with which the records are sorted
+* - Argument 3 : field number by which the records are sorted
+* - Argument 4 : algorithm number used to sort the records
 *
 * @note The output file is created or opened on write mode (its content will be deleted before the sorting begins)
  */

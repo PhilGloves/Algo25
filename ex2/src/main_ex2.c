@@ -4,6 +4,8 @@
 #include <string.h>
 #include <limits.h>
 #include "edit_distance.h"
+
+//Growth factor used to reallocate the array when it's full
 #define GROWTH_FACTOR 1.5
 
 typedef struct {
@@ -157,7 +159,6 @@ int main(int argc, char *argv[]) {
 
     FILE *dictionary_file = fopen(argv[1], "r");
     FILE *correctme_file = fopen(argv[2], "r");
-    
 
     if(dictionary_file == NULL || correctme_file == NULL){
         fprintf(stderr, "Couldn't open dictionary or correctme file\n");

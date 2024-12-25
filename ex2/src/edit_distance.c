@@ -5,9 +5,17 @@
 
 #include "edit_distance.h"
 
-const char *rest(const char *string) {
+/**
+ * @brief Returns the pointer to the rest of the string, starting from the second character
+ *
+ * @param string Pointer to the original string
+ * 
+ * @return Pointer to the substring starting from the second character
+ */
+const char *rest(const char *string){
     return string + 1;
 }
+
 int edit_distance(const char *s1, const char* s2){
     if (s1 == NULL || s2 == NULL) return -1;
 
@@ -15,7 +23,7 @@ int edit_distance(const char *s1, const char* s2){
     if (len1 == 0) return len2;
     if (len2 == 0) return len1;
 
-    int d_no_op = INT_MAX;;
+    int d_no_op = INT_MAX;
     if(*s1 == *s2)
             d_no_op = edit_distance(rest(s1), rest(s2));
             
@@ -31,6 +39,21 @@ int edit_distance(const char *s1, const char* s2){
         }
 }
 
+/**
+ * @brief Calculates the minimum edit distance between two strings s1 and s2 using dynamic programming
+ *
+ * This function performs the actual computation of the edit distance using a recursive approach.
+ * Designed to be called internally by a wrapper function (e.g., edit_distance_dyn), which handles memory allocation
+ * and initialization of the cost matrix.
+ * 
+ * @param s1 Pointer to the source string
+ * @param s2 Pointer to the target string
+ * @param len1 Length of the source string
+ * @param len2 Length of the target string
+ * @param cost_matrix Matrix used to store previously calculated results to avoid redundant computations
+ *
+ * @return Int value of edit distance between the two strings
+ */
 int recursive_edit_distance_dyn(const char *s1, const char *s2, int len1, int len2, int **cost_matrix){
     if (cost_matrix[len1][len2] != -1) {
         return cost_matrix[len1][len2];
@@ -61,7 +84,8 @@ int recursive_edit_distance_dyn(const char *s1, const char *s2, int len1, int le
     return result;
 }
 
-int edit_distance_dyn(const char *s1, const char *s2) {
+int edit_distance_dyn(const char *s1, const char *s2){
+    if (s1 == NULL || s2 == NULL) return -1;
     int len1 = strlen(s1);
     int len2 = strlen(s2);
     
