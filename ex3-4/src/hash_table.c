@@ -32,7 +32,7 @@ static void hash_table_resize(HashTable* table) {
     table->size = 0;
 
     for (size_t i = 0; i < old_capacity; i++) {
-        HashNode* current = table->buckets[i];
+        HashNode* current = old_buckets[i];
         while (current != NULL) {
             hash_table_put(table, current->key, current->value);
             HashNode* inserted_node = current;
@@ -149,8 +149,7 @@ void hash_table_free(HashTable* table) {
         while (current) {
             HashNode* temp = current;
             current = current->next;
-
-            free(temp); 
+            free(temp);
         }
     }
 

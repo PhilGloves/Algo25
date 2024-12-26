@@ -19,7 +19,6 @@ Graph graph_create(int labelled, int directed, int (*compare)(const void*, const
   if (gr == NULL) {
     return NULL;
   }
-  gr->nodes_size = 0;
   gr->labelled = labelled;
   gr->directed = directed;
   gr->nodes = hash_table_create(compare, hash);
@@ -47,8 +46,6 @@ int graph_add_node(Graph gr, const void* node) {
     hash_table_put(
         gr->nodes, node,
         hash_table_create(gr->nodes->compare_keys, gr->nodes->hash_func));
-
-    gr->nodes_size++;
     return 1;
   }
 
@@ -115,7 +112,9 @@ int graph_contains_edge(const Graph gr, const void* node1, const void* node2) {
     perror("Errore argomenti per contains_edge");
     exit(EXIT_FAILURE);
   }
-
+  if (!hash_table_contains_key(gr->nodes, node1)) {
+    return 0;
+  }
   return hash_table_contains_key(hash_table_get(gr->nodes, node1), node2)? 1 : 0;
 }
 
@@ -141,11 +140,10 @@ int graph_remove_node(Graph gr, const void* node) {
   free(keyset);
   hash_table_remove(gr->nodes, node);
 
-  gr->nodes_size--;
-
   //pulisco archi che puntano a nodo
   keyset = hash_table_keyset(gr->nodes);
-  for (size_t i = 0; i < hash_table_size(gr->nodes); i++) {
+  keyset_size = hash_table_size(gr->nodes);
+  for (size_t i = 0; i < keyset_size; i++) {
     edge_table = hash_table_get(gr->nodes, keyset[i]);
     if (hash_table_contains_key(edge_table, node)) {
       free(hash_table_get(edge_table, node));
@@ -153,6 +151,7 @@ int graph_remove_node(Graph gr, const void* node) {
     }
   }
 
+  free(keyset);
   return 1;
 }
 
@@ -179,7 +178,7 @@ int graph_remove_edge(Graph gr, const void* node1, const void* node2) {
 }
 
 int graph_num_nodes(const Graph gr) {
-  return gr->nodes_size;
+  return gr->nodes->size;
 }
 
 int graph_num_edges(const Graph gr) {
@@ -191,8 +190,9 @@ int graph_num_edges(const Graph gr) {
   int edge_count = 0;
 
   void** keyset = hash_table_keyset(gr->nodes);
+  size_t keyset_size = hash_table_size(gr->nodes);
 
-  for (size_t i = 0; i < gr->nodes_size; i++) {
+  for (size_t i = 0; i < keyset_size; i++) {
     edge_count += hash_table_size(hash_table_get(gr->nodes, keyset[i]));
   }
 
@@ -200,6 +200,7 @@ int graph_num_edges(const Graph gr) {
 
   return edge_count;
 }
+
 void** graph_get_nodes(const Graph gr) {
   if (!gr) {
     perror("Errore get nodi");
@@ -225,8 +226,9 @@ Edge** graph_get_edges(const Graph gr) {
   size_t index = 0;
 
   void** Nodes = hash_table_keyset(gr->nodes);
+  size_t nodes_size = hash_table_size(gr->nodes);
 
-  for (size_t i = 0; i < gr->nodes_size; i++) {
+  for (size_t i = 0; i < nodes_size; i++) {
 
     HashTable* edge_table = hash_table_get(gr->nodes, Nodes[i]);
     void** edge_keyset = hash_table_keyset(edge_table);
@@ -288,8 +290,9 @@ void graph_free(Graph gr) {
   }
 
   void** Nodes = hash_table_keyset(gr->nodes);
+  size_t nodes_size = hash_table_size(gr->nodes);
 
-  for (size_t i = 0; i < gr->nodes_size; i++) {
+  for (size_t i = 0; i < nodes_size; i++) {
 
     HashTable* edge_table = hash_table_get(gr->nodes, Nodes[i]);
     void** edge_keyset = hash_table_keyset(edge_table);
