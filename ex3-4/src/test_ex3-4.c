@@ -4,7 +4,7 @@
 #include <string.h>
 
 
-#define DIRECTED 1
+#define DIRECTED 0
 
 // Funzioni di hash e compare
 int hash_table_compare_strings(const void* a, const void* b) {

@@ -4,15 +4,9 @@
 
 struct graph{
   HashTable* nodes;
-  size_t nodes_size;
   int labelled;
   int directed;
 };
-
-typedef struct edge_info {
-  void* label;
-  void* cost;
-}EdgeInfo;
 
 Graph graph_create(int labelled, int directed, int (*compare)(const void*, const void*), unsigned long (*hash)(const void*)) {
   Graph gr = malloc(sizeof(struct graph));
@@ -73,26 +67,10 @@ int graph_add_edge(Graph gr, const void* node1, const void* node2, const void* l
     return 0;
   }
 
-  EdgeInfo* edge_info = malloc(sizeof(EdgeInfo));
-  if (edge_info == NULL) {
-    perror("Errore allocazione memoria informazioni arco");
-    exit(EXIT_FAILURE);
-  }
-  edge_info->label = (void*)label;
-  edge_info->cost = NULL;
-
-  hash_table_put(hash_table_get(gr->nodes, node1), node2, edge_info);
+  hash_table_put(hash_table_get(gr->nodes, node1), node2, label);
 
   if (!gr->directed) {
-    EdgeInfo* edge_info_copy = malloc(sizeof(EdgeInfo));
-    if (edge_info_copy == NULL) {
-      perror("Errore allocazione memoria informazioni arco");
-      exit(EXIT_FAILURE);
-    }
-    edge_info_copy->label = (void*)label;
-    edge_info_copy->cost = NULL;
-
-    hash_table_put(hash_table_get(gr->nodes, node2), node1, edge_info_copy);
+    hash_table_put(hash_table_get(gr->nodes, node2), node1, label);
   }
 
   return 1;
@@ -128,27 +106,14 @@ int graph_remove_node(Graph gr, const void* node) {
     return 0;
   }
 
-  //pulisco nodo e archi
-  HashTable* edge_table = hash_table_get(gr->nodes, node);
-  void** keyset = hash_table_keyset(edge_table);
-  size_t keyset_size = hash_table_size(edge_table);
-
-  for (size_t i = 0; i < keyset_size; i++) {
-    free(hash_table_get(edge_table, keyset[i]));
-  }
-  hash_table_free(edge_table);
-  free(keyset);
+  hash_table_free(hash_table_get(gr->nodes, node));
   hash_table_remove(gr->nodes, node);
 
   //pulisco archi che puntano a nodo
-  keyset = hash_table_keyset(gr->nodes);
-  keyset_size = hash_table_size(gr->nodes);
+  void** keyset = hash_table_keyset(gr->nodes);
+  int keyset_size = hash_table_size(gr->nodes);
   for (size_t i = 0; i < keyset_size; i++) {
-    edge_table = hash_table_get(gr->nodes, keyset[i]);
-    if (hash_table_contains_key(edge_table, node)) {
-      free(hash_table_get(edge_table, node));
-      hash_table_remove(edge_table, node);
-    }
+    hash_table_remove(hash_table_get(gr->nodes, keyset[i]), node);
   }
 
   free(keyset);
@@ -165,14 +130,10 @@ int graph_remove_edge(Graph gr, const void* node1, const void* node2) {
     return 0;
   }
 
-  HashTable* edge_table = hash_table_get(gr->nodes, node1);
-  free(hash_table_get(edge_table, node2));
-  hash_table_remove(edge_table, node2);
+  hash_table_remove(hash_table_get(gr->nodes, node1), node2);
 
   if (!gr->directed) {
-    edge_table = hash_table_get(gr->nodes, node2);
-    free(hash_table_get(edge_table, node1));
-    hash_table_remove(edge_table, node1);
+    hash_table_remove(hash_table_get(gr->nodes, node2), node1);
   }
   return 1;
 }
@@ -234,7 +195,6 @@ Edge** graph_get_edges(const Graph gr) {
     void** edge_keyset = hash_table_keyset(edge_table);
 
     for (size_t j = 0; j < hash_table_size(edge_table); j++) {
-      EdgeInfo* edge_info = hash_table_get(edge_table, edge_keyset[j]);
       Edge* edge = malloc(sizeof(Edge));
       if (edge == NULL) {
         for (size_t k = 0; k < index; k++) {
@@ -247,7 +207,7 @@ Edge** graph_get_edges(const Graph gr) {
 
       edge->source = Nodes[i];
       edge->dest = edge_keyset[j];
-      edge->label = edge_info->label;
+      edge->label = hash_table_get(hash_table_get(gr->nodes, edge->source), edge->dest);
 
       edges[index] = edge;
       index++;
@@ -280,8 +240,7 @@ void* graph_get_label(const Graph gr, const void* node1, const void* node2) {
     perror("Errore get archi");
     exit(EXIT_FAILURE);
   }
-  EdgeInfo* info= hash_table_get(hash_table_get(gr->nodes, node1), node2);
-  return info->label;
+  return hash_table_get(hash_table_get(gr->nodes, node1), node2);
 }
 
 void graph_free(Graph gr) {
@@ -293,17 +252,10 @@ void graph_free(Graph gr) {
   size_t nodes_size = hash_table_size(gr->nodes);
 
   for (size_t i = 0; i < nodes_size; i++) {
-
     HashTable* edge_table = hash_table_get(gr->nodes, Nodes[i]);
-    void** edge_keyset = hash_table_keyset(edge_table);
-
-    for (size_t j = 0; j < hash_table_size(edge_table); j++) {
-      free(hash_table_get(edge_table, edge_keyset[j]));
-    }
-
-    free(edge_keyset);
     hash_table_free(edge_table);
   }
+
   free(Nodes);
   hash_table_free(gr->nodes);
   free(gr);
