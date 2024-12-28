@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include "queue.h"
 
 int hash_table_compare_strings(const void* a, const void* b) {
   return strcmp((const char*)a, (const char*)b);
@@ -41,7 +42,46 @@ void load_file(Graph graph, char* infile) {
 //Start è il nodo di partenza da cui cominciare la visita, la funzione restituisce l'array dei nodi nell'ordine di visita.
 //Eventualmente, la funzione restituisce null se il nodo start non è presente nel grafo gr.
 void** breadth_first_visit(Graph gr, void* start, int (*compare)(const void*, const void*), unsigned long (*hash)(const void*)) {
+  if (!gr || !start || !compare || !hash) {
+    printf("Error bfv arguments\n");
+    return NULL;
+  }
 
+  if (!graph_contains_node(gr, start))
+    return NULL;
+
+  Queue* queue = queue_create(graph_num_nodes(gr));
+
+  HashTable* visited_node = hash_table_create(compare, hash);
+
+  void** bfs_result = calloc(graph_num_nodes(gr), sizeof(void*));
+  int result_index = 0;
+
+  queue_enqueue(queue, start);
+  hash_table_put(visited_node, start, (void**)1);
+
+  while (!queue_empty(queue)) {
+    void* current = queue_dequeue(queue);
+
+    void** current_neighbours = graph_get_neighbours(gr, current);
+    int current_neighbours_num = graph_num_neighbours(gr, current);
+    if (current_neighbours) {
+      for (int i = 0; i < current_neighbours_num; i++) {
+        if (!hash_table_contains_key(visited_node, current_neighbours[i])) {
+          queue_enqueue(queue, current_neighbours[i]);
+          hash_table_put(visited_node, current_neighbours[i], (void**)1);
+        }
+      }
+    }
+    free(current_neighbours);
+    bfs_result[result_index] = current;
+    result_index++;
+  }
+
+  queue_free(queue);
+  hash_table_free(visited_node);
+
+  return bfs_result;
 }
 
 void write_visited(const char* outfile, void** visited, size_t num_nodes) {
@@ -50,7 +90,7 @@ void write_visited(const char* outfile, void** visited, size_t num_nodes) {
     printf("Error opening file %s\n", outfile);
   }
 
-  for (int i = 0; i < num_nodes; i++) {
+  for (int i = 0; i < num_nodes && visited[i]; i++) {
     fprintf(file, "%s\n", (char*)visited[i]);
   }
 }
@@ -73,9 +113,12 @@ void graph_visit(const char* infile, const char* start, const char* outfile) {
     printf("Node requested doesn't exist\n");
   }
 
+  free(visited);
   graph_free(graph);
 }
 
+
+//bin/main_ex3-4 dataset/italian_dist_graph.csv pinerolo dataset/result.txt
 int main(int argc, char** argv) {
   if (argc != 4) {
     printf("Not enough arguments\n");

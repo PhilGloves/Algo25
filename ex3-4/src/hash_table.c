@@ -128,6 +128,7 @@ return table->size;
 
 // Funzione per ottenere tutte le chiavi
 void** hash_table_keyset(const HashTable* table) {
+    if (!table || table->size == 0) return NULL;
     void** keys = malloc(table->size * sizeof(void*));
     size_t index = 0;
 

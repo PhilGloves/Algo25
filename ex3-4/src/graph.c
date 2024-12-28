@@ -220,7 +220,7 @@ Edge** graph_get_edges(const Graph gr) {
 
 void** graph_get_neighbours(const Graph gr, const void* node) {
   if (!gr || !node) {
-    perror("Errore get archi");
+    perror("Errore get neighbours");
     exit(EXIT_FAILURE);
   }
 
@@ -229,7 +229,7 @@ void** graph_get_neighbours(const Graph gr, const void* node) {
 
 int graph_num_neighbours(const Graph gr, const void* node) {
   if (!gr || !node) {
-    perror("Errore get archi");
+    perror("Errore num neighbours");
     exit(EXIT_FAILURE);
   }
   return hash_table_size(hash_table_get(gr->nodes, node));
@@ -237,7 +237,7 @@ int graph_num_neighbours(const Graph gr, const void* node) {
 
 void* graph_get_label(const Graph gr, const void* node1, const void* node2) {
   if (!gr || !node1 || !node2) {
-    perror("Errore get archi");
+    perror("Errore get label");
     exit(EXIT_FAILURE);
   }
   return hash_table_get(hash_table_get(gr->nodes, node1), node2);
