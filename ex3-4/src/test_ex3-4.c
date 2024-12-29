@@ -1,7 +1,7 @@
-#include "unity.h"
 #include "graph.h"
-#include "hash_table.h"
+#include "../../ex3/include/hash_table.h"
 #include <string.h>
+#include "unity.h"
 
 
 #define DIRECTED 0

@@ -2,18 +2,17 @@
 #define HASH_TABLE_H
 
 #include <stdlib.h>
-#include <stdbool.h>
 
 /**
  * @brief Linked list node used in a hash table bucket.
  *
  * Each bucket in the hash table is a linked list to handle collisions.
- * A node contains a key, a value, and a pointer to the next node in the list.
+ * A node contains a key, a value, a cached hash, and a pointer to the next node in the list.
  */
 typedef struct HashNode {
-    void* key;                 /**< The key associated with the value. */
-    void* value;               /**< The value associated with the key. */
-    struct HashNode* next;     /**< Pointer to the next node in the list. */
+    void* key;                  /**< The key associated with the value. */
+    void* value;                /**< The value associated with the key. */
+    struct HashNode* next;      /**< Pointer to the next node in the list. */
 } HashNode;
 
 /**
@@ -26,33 +25,19 @@ typedef struct HashTable {
     HashNode** buckets;                /**< Array of buckets. */
     int capacity;                      /**< Number of available buckets. */
     int size;                          /**< Current number of elements in the table. */
-    bool allow_resize;                 /**< Flag indicating if resizing is allowed. */
-    int (*compare_keys)(const void*, const void*); /**< Pointer to the function for comparing keys. */
-    unsigned long (*hash_func)(const void*);       /**< Pointer to the hash function. */
-    void (*free_key)(void*);                       /**< Pointer to the function for freeing keys. */
-    void (*free_value)(void*);                     /**< Pointer to the function for freeing values. */
+    int (*compare_keys)(const void*, const void*);   /**< Pointer to the function for comparing keys. */
+    unsigned long (*hash_func)(const void*);         /**< Pointer to the hash function. */
 } HashTable;
 
 /**
  * @brief Creates a new hash table.
  *
- * @param initial_capacity The initial number of buckets.
- * @param allow_resize Flag indicating whether the hash table can be resized.
- * @param compare_keys Pointer to a function used to compare keys.
- * @param hash_func Pointer to a function used to compute hash values for keys.
- * @param free_key Pointer to a function to free memory associated with keys (can be NULL).
- * @param free_value Pointer to a function to free memory associated with values (can be NULL).
+ * @param f1 Pointer to a function used to compare keys.
+ * @param f2 Pointer to a function used to compute hash values for keys.
  *
  * @return Pointer to the newly created hash table, or NULL if allocation fails.
  */
-HashTable* hash_table_create(
-    int initial_capacity,
-    bool allow_resize,
-    int (*compare_keys)(const void*, const void*),
-    unsigned long (*hash_func)(const void*),
-    void (*free_key)(void*),
-    void (*free_value)(void*)
-);
+HashTable* hash_table_create(int (*f1)(const void*, const void*), unsigned long (*f2)(const void*));
 
 /**
  * @brief Inserts or updates a key-value pair in the hash table.
@@ -62,10 +47,8 @@ HashTable* hash_table_create(
  * @param table Pointer to the hash table.
  * @param key Pointer to the key to insert.
  * @param value Pointer to the value to associate with the key.
- *
- * @return 0 on success, -1 on failure (e.g., memory allocation failure).
  */
-int hash_table_put(HashTable* table, const void* key, const void* value);
+void hash_table_put(HashTable* table, const void* key, const void* value);
 
 /**
  * @brief Retrieves the value associated with a given key.
@@ -120,20 +103,10 @@ void** hash_table_keyset(const HashTable* table);
 /**
  * @brief Frees all memory associated with the hash table.
  *
- * This includes all buckets, keys, and values, using the provided free functions.
+ * This includes all buckets, keys, and values.
  *
  * @param table Pointer to the hash table to free.
  */
 void hash_table_free(HashTable* table);
-
-/**
- * @brief Resizes the hash table to a specified capacity.
- *
- * @param table Pointer to the hash table.
- * @param new_capacity The new number of buckets.
- *
- * @return 0 on success, -1 on failure (e.g., insufficient memory or invalid capacity).
- */
-int hash_table_resize_to(HashTable* table, int new_capacity);
 
 #endif // HASH_TABLE_H

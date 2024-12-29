@@ -1,8 +1,6 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
-#include "hash_table.h"
-
 typedef struct graph* Graph;
 
 typedef struct edge {

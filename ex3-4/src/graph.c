@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "graph.h"
+#include "../../ex3/include/hash_table.h"
 
 struct graph{
   HashTable* nodes;

@@ -4,6 +4,7 @@
 #include <string.h>
 #include <time.h>
 #include "queue.h"
+#include "../../ex3/include/hash_table.h"
 
 int hash_table_compare_strings(const void* a, const void* b) {
   return strcmp((const char*)a, (const char*)b);
@@ -97,7 +98,7 @@ void write_visited(const char* outfile, void** visited, size_t num_nodes) {
 
 void graph_visit(const char* infile, const char* start, const char* outfile) {
   Graph graph = graph_create(1,0,hash_table_compare_strings,hash_table_hash_string);
-  load_file(graph, infile);
+  load_file(graph, (char*)infile);
 
   clock_t start_bfs = clock();
 

@@ -1,113 +1,88 @@
 #include "hash_table.h"
-#include <string.h>
+
 #include <stdio.h>
 
-// Funzione per creare una nuova hash table
-HashTable* hash_table_create(
-    int initial_capacity,
-    bool allow_resize,
-    int (*compare_keys)(const void*, const void*),
-    unsigned long (*hash_func)(const void*),
-    void (*free_key)(void*),
-    void (*free_value)(void*)
-) {
-    if (initial_capacity <= 0 || !compare_keys || !hash_func) {
-        return NULL;
-    }
-
+// Funzione di creazione della tavola hash
+HashTable* hash_table_create(int (*f1)(const void*, const void*), unsigned long (*f2)(const void*)) {
     HashTable* table = malloc(sizeof(HashTable));
-    if (!table) return NULL;
-
-    table->capacity = initial_capacity;
+    table->capacity = 16; // Capacità iniziale
     table->size = 0;
-    table->allow_resize = allow_resize;
-    table->compare_keys = compare_keys;
-    table->hash_func = hash_func;
-    table->free_key = free_key;
-    table->free_value = free_value;
     table->buckets = calloc(table->capacity, sizeof(HashNode*));
-    if (!table->buckets) {
-        free(table);
-        return NULL;
+    for (int i = 0; i < table->capacity; i++) {
+        table->buckets[i] = NULL;
     }
-
+    table->compare_keys = f1;
+    table->hash_func = f2;
     return table;
 }
 
-// Funzione per ridimensionare la tabella hash
-static int resize_table_internal(HashTable* table, int new_capacity) {
-    if (new_capacity <= 0 || new_capacity < table->size) {
-        return -1; // Capacità non valida
+static void hash_table_resize(HashTable* table) {
+    int old_capacity = table->capacity;
+    HashNode** old_buckets = table->buckets;
+
+    int new_capacity = table->capacity * 2;
+    HashNode** new_buckets = calloc(new_capacity, sizeof(HashNode*));
+    if (!new_buckets) return; // Fallisce silenziosamente per semplicità
+    for (int i = 0; i < new_capacity; i++) {
+        new_buckets[i] = NULL;
     }
 
-    HashNode** new_buckets = calloc(new_capacity, sizeof(HashNode*));
-    if (!new_buckets) return -1;
+    table->capacity = new_capacity;
+    table->buckets = new_buckets;
+    table->size = 0;
 
-    for (int i = 0; i < table->capacity; i++) {
-        HashNode* current = table->buckets[i];
-        while (current) {
-            unsigned long new_index = table->hash_func(current->key) % new_capacity;
-            HashNode* next = current->next;
-
-            current->next = new_buckets[new_index];
-            new_buckets[new_index] = current;
-            current = next;
+    for (size_t i = 0; i < old_capacity; i++) {
+        HashNode* current = old_buckets[i];
+        while (current != NULL) {
+            hash_table_put(table, current->key, current->value);
+            HashNode* inserted_node = current;
+            current = current->next;
+            free(inserted_node);
         }
     }
 
-    free(table->buckets);
-    table->buckets = new_buckets;
-    table->capacity = new_capacity;
-
-    return 0;
+    // Libera i vecchi bucket e aggiorna la tabella
+    free(old_buckets);
 }
 
-// Funzione pubblica per ridimensionare a una capacità desiderata
-int hash_table_resize_to(HashTable* table, int new_capacity) {
-    if (!table) return -1;
-    return resize_table_internal(table, new_capacity);
-}
+// Funzione per inserire un elemento
+void hash_table_put(HashTable* table, const void* key, const void* value) {
+    if (!table || !key) return;
 
-// Inserisce o aggiorna un elemento nella hash table
-int hash_table_put(HashTable* table, const void* key, const void* value) {
-    if (!table || !key) return -1;
-
-    // Ridimensiona se necessario
-    if (table->allow_resize && (float)table->size / table->capacity > 0.75) {
-        resize_table_internal(table, table->capacity * 2);
+    if ((float)(table->size + 1) / table->capacity > 0.75) {
+        hash_table_resize(table); // Ridimensiona se necessario
     }
 
-    unsigned long index = table->hash_func(key) % table->capacity;
+    unsigned long hash = table->hash_func(key);
+    unsigned long index = hash % table->capacity;
     HashNode* current = table->buckets[index];
 
     while (current) {
         if (table->compare_keys(current->key, key) == 0) {
-            if (table->free_value) table->free_value(current->value);
-            current->value = (void*)value;
-            return 0;
+            current->value = (void*)value; // Aggiorna il valore
+            return;
         }
         current = current->next;
     }
 
+    // Inserisce un nuovo nodo
     HashNode* new_node = malloc(sizeof(HashNode));
-    if (!new_node) return -1;
+    if (!new_node) return; // Gestione del fallimento dell'allocazione
     new_node->key = (void*)key;
     new_node->value = (void*)value;
     new_node->next = table->buckets[index];
     table->buckets[index] = new_node;
     table->size++;
-
-    return 0;
 }
 
-// Ottiene un valore dalla hash table
+// Funzione per ottenere un valore
 void* hash_table_get(const HashTable* table, const void* key) {
     if (!table || !key) return NULL;
 
-    unsigned long index = table->hash_func(key) % table->capacity;
-    HashNode* current = table->buckets[index];
+    unsigned long hash = table->hash_func(key) % table->capacity;
+    HashNode* current = table->buckets[hash];
 
-    while (current) {
+    while (current != NULL) {
         if (table->compare_keys(current->key, key) == 0) {
             return current->value;
         }
@@ -116,29 +91,27 @@ void* hash_table_get(const HashTable* table, const void* key) {
     return NULL;
 }
 
-// Verifica se una chiave esiste nella tabella
+// Funzione per verificare la presenza di una chiave
 int hash_table_contains_key(const HashTable* table, const void* key) {
-    return hash_table_get(table, key) != NULL;
+return hash_table_get(table, key) != NULL;
 }
 
-// Rimuove un elemento dalla hash table
+// Funzione per rimuovere un elemento
 void hash_table_remove(HashTable* table, const void* key) {
     if (!table || !key) return;
 
-    unsigned long index = table->hash_func(key) % table->capacity;
-    HashNode* current = table->buckets[index];
+    unsigned long hash = table->hash_func(key) % table->capacity;
+    HashNode* current = table->buckets[hash];
     HashNode* prev = NULL;
 
-    while (current) {
+    while (current != NULL) {
         if (table->compare_keys(current->key, key) == 0) {
-            if (prev) {
+            if (prev != NULL) {
                 prev->next = current->next;
             } else {
-                table->buckets[index] = current->next;
+                table->buckets[hash] = current->next;
             }
 
-            if (table->free_key) table->free_key(current->key);
-            if (table->free_value) table->free_value(current->value);
             free(current);
             table->size--;
             return;
@@ -148,22 +121,20 @@ void hash_table_remove(HashTable* table, const void* key) {
     }
 }
 
-// Ritorna il numero di elementi nella tabella
+// Funzione per ottenere il numero di elementi
 int hash_table_size(const HashTable* table) {
-    return table ? table->size : 0;
+return table->size;
 }
 
-// Ritorna tutte le chiavi come array
+// Funzione per ottenere tutte le chiavi
 void** hash_table_keyset(const HashTable* table) {
     if (!table || table->size == 0) return NULL;
-
     void** keys = malloc(table->size * sizeof(void*));
-    if (!keys) return NULL;
+    size_t index = 0;
 
-    int index = 0;
-    for (int i = 0; i < table->capacity; i++) {
+    for (size_t i = 0; i < table->capacity; i++) {
         HashNode* current = table->buckets[i];
-        while (current) {
+        while (current != NULL) {
             keys[index++] = current->key;
             current = current->next;
         }
@@ -171,18 +142,15 @@ void** hash_table_keyset(const HashTable* table) {
     return keys;
 }
 
-// Libera la memoria della hash table
 void hash_table_free(HashTable* table) {
     if (!table) return;
 
-    for (int i = 0; i < table->capacity; i++) {
+    for (size_t i = 0; i < table->capacity; i++) {
         HashNode* current = table->buckets[i];
         while (current) {
-            HashNode* next = current->next;
-            if (table->free_key) table->free_key(current->key);
-            if (table->free_value) table->free_value(current->value);
-            free(current);
-            current = next;
+            HashNode* temp = current;
+            current = current->next;
+            free(temp);
         }
     }
 
