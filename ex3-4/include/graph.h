@@ -9,29 +9,175 @@ typedef struct edge {
    void* label; //etichetta dell'arco
 }Edge;
 
+/**
+ * @brief Creates a new graph.
+ *
+ * @param labelled Indicates if the graph is labelled.
+ * @param directed Indicates if the graph is directed.
+ * @param compare Pointer to the function to compare nodes.
+ * @param hash Pointer to the function to compute hash values for nodes.
+ *
+ * @return Pointer to the newly created graph, or NULL if allocation fails.
+ */
 Graph graph_create(int labelled, int directed,
                      int (*compare)(const void*, const void*),
                      unsigned long (*hash)(const void*));
 
-//crea un grafo vuoto, etichettato se labelled == 1 e diretto se directed == 1,
-//le funzioni f1 e f2 sono necessarie per la costruzione della tavola hash che deve essere usata dalla libreria -- O(1)
+/**
+ * @brief Checks if the graph is directed.
+ *
+ * @param gr Pointer to the graph.
+ *
+ * @return Non-zero value if the graph is directed, otherwise 0.
+ */
+int graph_is_directed(const Graph gr);
 
-int graph_is_directed(const Graph gr);                                                           // dice se il grafo è diretto o meno -- O(1)
-int graph_is_labelled(const Graph gr);                                                           // dice se il grafo è etichettato o meno -- O(1)
-int graph_add_node(Graph gr, const void* node);                                                  // aggiunge un nodo -- O(1)
-int graph_add_edge(Graph gr, const void* node1, const void* node2, const void* label);           // aggiunge un arco dati estremi ed etichetta -- O(1) (*)
-int graph_contains_node(const Graph gr, const void* node);                                       // controlla se un nodo è nel grafo -- O(1)
-int graph_contains_edge(const Graph gr, const void* node1, const void* node2);                   // controlla se un arco è nel grafo -- O(1) (*)
-int graph_remove_node(Graph gr, const void* node);                                               // rimuove un nodo dal grafo -- O(N)
-int graph_remove_edge(Graph gr, const void* node1, const void* node2);                           // rimuove un arco dal grafo -- O(1) (*)
-int graph_num_nodes(const Graph gr);                                                             // numero di nodi -- O(1)
-int graph_num_edges(const Graph gr);                                                             // numero di archi -- O(N)
-void** graph_get_nodes(const Graph gr);                                                          // recupero dei nodi del grafo -- O(N)
-Edge** graph_get_edges(const Graph gr);                                                          // recupero degli archi del grafo -- O(N)
-void** graph_get_neighbours(const Graph gr, const void* node);                                   // recupero dei nodi adiacenti ad un dato nodo -- O(1) (*)
-int graph_num_neighbours(const Graph gr, const void* node);                                      // recupero del numero di nodi adiacenti ad un dato nodo -- O(1)
-void* graph_get_label(const Graph gr, const void* node1, const void* node2);                     // recupero dell'etichetta di un arco -- O(1) (*)
+/**
+ * @brief Checks if the graph is labelled.
+ *
+ * @param gr Pointer to the graph.
+ *
+ * @return Non-zero value if the graph is labelled, otherwise 0.
+ */
+int graph_is_labelled(const Graph gr);
+
+/**
+ * @brief Adds a node to the graph.
+ *
+ * @param gr Pointer to the graph.
+ * @param node Pointer to the node to be added.
+ *
+ * @return 1 if the node is successfully added, 0 if it already exists.
+ */
+int graph_add_node(Graph gr, const void* node);
+
+/**
+ * @brief Adds an edge to the graph.
+ *
+ * @param gr Pointer to the graph.
+ * @param node1 Pointer to the source node.
+ * @param node2 Pointer to the destination node.
+ * @param label Pointer to the edge label (must not be NULL if the graph is labelled).
+ *
+ * @note If the nodes of the edge you want to add are not in the graph, they will be added.
+ * @return 1 if the edge is successfully added, 0 if it already exists.
+ */
+int graph_add_edge(Graph gr, const void* node1, const void* node2, const void* label);
+
+/**
+ * @brief Checks if a node exists in the graph.
+ *
+ * @param gr Pointer to the graph.
+ * @param node Pointer to the node to check.
+ *
+ * @return 1 if the node exists, otherwise 0.
+ */
+int graph_contains_node(const Graph gr, const void* node);
+
+/**
+* @brief Checks if an edge exists in the graph.
+*
+* @param gr Pointer to the graph.
+* @param node1 Pointer to the source node.
+* @param node2 Pointer to the destination node.
+*
+* @return 1 if the edge exists, otherwise 0.
+*/
+int graph_contains_edge(const Graph gr, const void* node1, const void* node2);
+
+/**
+ * @brief Removes a node and all its associated edges from the graph.
+ *
+ * @param gr Pointer to the graph.
+ * @param node Pointer to the node to be removed.
+ *
+ * @return 1 if the node is successfully removed, otherwise 0.
+ */
+int graph_remove_node(Graph gr, const void* node);
+
+/**
+ * @brief Removes an edge from the graph.
+ *
+ * @param gr Pointer to the graph.
+ * @param node1 Pointer to the source node.
+ * @param node2 Pointer to the destination node.
+ *
+ * @return 1 if the edge is successfully removed, otherwise 0.
+ */
+int graph_remove_edge(Graph gr, const void* node1, const void* node2);
+
+/**
+ * @brief Gets the number of nodes in the graph.
+ *
+ * @param gr Pointer to the graph.
+ *
+ * @return The number of nodes in the graph.
+ */
+int graph_num_nodes(const Graph gr);
+
+/**
+ * @brief Gets the number of edges in the graph.
+ *
+ * @param gr Pointer to the graph.
+ *
+ * @return The number of edges in the graph.
+ */
+int graph_num_edges(const Graph gr);
+
+/**
+ * @brief Gets all nodes in the graph.
+ *
+ * @param gr Pointer to the graph.
+ *
+ * @return Array of pointers to all nodes in the graph.
+ */
+void** graph_get_nodes(const Graph gr);
+
+/**
+ * @brief Gets all edges in the graph.
+ *
+ * @param gr Pointer to the graph.
+ *
+ * @return Array of pointers to all edges in the graph, or NULL on failure.
+ */
+Edge** graph_get_edges(const Graph gr);
+
+/**
+ * @brief Gets all neighbors of a specific node in the graph.
+ *
+ * @param gr Pointer to the graph.
+ * @param node Pointer to the node whose neighbors are to be retrieved.
+ *
+ * @return Array of pointers to all neighbor nodes.
+ */
+void** graph_get_neighbours(const Graph gr, const void* node);
+
+/**
+ * @brief Gets the number of neighbors of a specific node in the graph.
+ *
+ * @param gr Pointer to the graph.
+ * @param node Pointer to the node whose neighbors are to be counted.
+ *
+ * @return The number of neighbors of the node.
+ */
+int graph_num_neighbours(const Graph gr, const void* node);
+
+/**
+ * @brief Gets the label of an edge between two nodes in the graph.
+ *
+ * @param gr Pointer to the graph.
+ * @param node1 Pointer to the source node.
+ * @param node2 Pointer to the destination node.
+ *
+ * @return Pointer to the label of the edge, or NULL if no edge exists.
+ */
+void* graph_get_label(const Graph gr, const void* node1, const void* node2);
+
+/**
+ * @brief Frees all memory associated with the graph.
+ *
+ * @param gr Pointer to the graph to be freed.
+ */
 void graph_free(Graph gr);
-
 
 #endif //GRAPH_H

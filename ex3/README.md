@@ -1068,7 +1068,7 @@ ___
 ## Iterazione extra
 Dato che il correttore automatico per questo esercizio prevede una libreria che ha le funzioni strutturate come nella consegna, ho ripreso l'output generato alla prima iterazione e ho creato una versione base della libreria, che non prevede alcun cambiamento che è stato inserito nel corso delle iterazioni.
 Per farlo è stato chiesto al LLM, come nella sesta iterazione, il main e i test, dando in input il file [hash_table.c](#iterazione-1).
-Per comodità i file avranno lo stesso nome dei rispettivi sviluppati fino a ora.
+Per comodità i file avranno lo stesso nome dei rispettivi sviluppati fino a ora, e la versione "estesa" è stata spostata in un altra cartella.
 
 ### Output
 
@@ -1330,6 +1330,8 @@ int main(void) {
 
 I test risultano molto più semplici, dato che non ho richiesto dei test specifici. Invece il main cambia da quello già presentato, questo separa le parole, togliendo caratteri che non sono lettere e trasformando le parole tutte minuscole.
 Dato che i test forniti su moodle richiedono questa versione, cambio il codice anche per la versione precedente.
+Inoltre dato che c'è stato un fraintendimento con il modo in cui funziona il correttore, ho modificato più volte il codice, un cambiamento significativo è l'inizializzazione del array di bucket, in cui tutti i valori sono stati messi a NULL, evitando possibili problemi con i puntatori.
+Il problema con il correttore riguarda la funzione di compare, io usando una struttura simile ai comparatori del esercizio 1, che restituiva -1 se minore, 0 se uguale e 1 se maggiore, nel codice di hash_table.c quando veniva controllata l'uguaglianza tra due chiavi, mi aspettavo il risultato di compare uguale a 0, invece in quella usata dal correttore, se uguale veniva restituito 1.
 
 ___
 

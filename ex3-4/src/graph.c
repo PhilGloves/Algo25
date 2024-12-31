@@ -3,10 +3,18 @@
 #include "graph.h"
 #include "../../ex3/include/hash_table.h"
 
-struct graph{
-  HashTable* nodes;
-  int labelled;
-  int directed;
+/**
+ * @brief Defines the structure for a graph.
+ *
+ * A graph consists of nodes stored in a hash table as key,
+ * with the element being another hash table that contains
+ * adjacent node as key and a generic pointer as element (ex. label).
+ * It can be either directed or not, labelled or unlabelled.
+ */
+struct graph {
+  HashTable* nodes; /**< Hash table storing nodes. */
+  int labelled;     /**< Indicates whether the graph is labelled (1) or not (0). */
+  int directed;     /**< Indicates whether the graph is directed (1) or not (0). */
 };
 
 Graph graph_create(int labelled, int directed, int (*compare)(const void*, const void*), unsigned long (*hash)(const void*)) {
