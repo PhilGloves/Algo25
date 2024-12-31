@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "unity.h"
 #include "unity_internals.h"
 
@@ -27,8 +28,8 @@ void test_edit_distance_on_null_strings(void) {
 void test_edit_distance_on_one_empty_string(void) {
     const char *s1 = "cassa";
     const char *s2 = "";
-    TEST_ASSERT_EQUAL_INT(length(s1), edit_distance(s1, s2));
-    TEST_ASSERT_EQUAL_INT(length(s1), edit_distance_dyn(s1, s2));
+    TEST_ASSERT_EQUAL_INT(strlen(s1), edit_distance(s1, s2));
+    TEST_ASSERT_EQUAL_INT(strlen(s1), edit_distance_dyn(s1, s2));
 }
 
 void test_edit_distance_on_one_null_string(void) {

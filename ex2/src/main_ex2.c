@@ -46,7 +46,6 @@ void init_word_array(WordArray *warr, size_t initial_capacity) {
     }
 }
 
-
 void add_word(WordArray *warr, const char *new_word) {
     if (warr->size == warr->capacity) {
         warr->capacity = (size_t)(warr->capacity * GROWTH_FACTOR);

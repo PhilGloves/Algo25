@@ -24,8 +24,9 @@ int edit_distance(const char *s1, const char* s2){
     if (len2 == 0) return len1;
 
     int d_no_op = INT_MAX;
-    if(*s1 == *s2)
+    if(*s1 == *s2){
             d_no_op = edit_distance(rest(s1), rest(s2));
+    }
             
     int d_canc = 1 + edit_distance(s1, rest(s2));
     int d_ins = 1 + edit_distance(rest(s1), s2);
