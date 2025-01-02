@@ -2,10 +2,9 @@
 
 #include <stdio.h>
 
-// Funzione di creazione della tavola hash
 HashTable* hash_table_create(int (*f1)(const void*, const void*), unsigned long (*f2)(const void*)) {
     HashTable* table = malloc(sizeof(HashTable));
-    table->capacity = 16; // Capacità iniziale
+    table->capacity = 16;
     table->size = 0;
     table->buckets = calloc(table->capacity, sizeof(HashNode*));
     for (int i = 0; i < table->capacity; i++) {
@@ -22,7 +21,7 @@ static void hash_table_resize(HashTable* table) {
 
     int new_capacity = table->capacity * 2;
     HashNode** new_buckets = calloc(new_capacity, sizeof(HashNode*));
-    if (!new_buckets) return; // Fallisce silenziosamente per semplicità
+    if (!new_buckets) return;
     for (int i = 0; i < new_capacity; i++) {
         new_buckets[i] = NULL;
     }
@@ -41,16 +40,14 @@ static void hash_table_resize(HashTable* table) {
         }
     }
 
-    // Libera i vecchi bucket e aggiorna la tabella
     free(old_buckets);
 }
 
-// Funzione per inserire un elemento
 void hash_table_put(HashTable* table, const void* key, const void* value) {
     if (!table || !key) return;
 
     if ((float)(table->size + 1) / table->capacity > 0.75) {
-        hash_table_resize(table); // Ridimensiona se necessario
+        hash_table_resize(table);
     }
 
     unsigned long hash = table->hash_func(key);
@@ -59,15 +56,14 @@ void hash_table_put(HashTable* table, const void* key, const void* value) {
 
     while (current) {
         if (table->compare_keys(current->key, key) == 0) {
-            current->value = (void*)value; // Aggiorna il valore
+            current->value = (void*)value;
             return;
         }
         current = current->next;
     }
 
-    // Inserisce un nuovo nodo
     HashNode* new_node = malloc(sizeof(HashNode));
-    if (!new_node) return; // Gestione del fallimento dell'allocazione
+    if (!new_node) return;
     new_node->key = (void*)key;
     new_node->value = (void*)value;
     new_node->next = table->buckets[index];
@@ -75,7 +71,6 @@ void hash_table_put(HashTable* table, const void* key, const void* value) {
     table->size++;
 }
 
-// Funzione per ottenere un valore
 void* hash_table_get(const HashTable* table, const void* key) {
     if (!table || !key) return NULL;
 
@@ -91,12 +86,10 @@ void* hash_table_get(const HashTable* table, const void* key) {
     return NULL;
 }
 
-// Funzione per verificare la presenza di una chiave
 int hash_table_contains_key(const HashTable* table, const void* key) {
 return hash_table_get(table, key) != NULL;
 }
 
-// Funzione per rimuovere un elemento
 void hash_table_remove(HashTable* table, const void* key) {
     if (!table || !key) return;
 
@@ -121,12 +114,10 @@ void hash_table_remove(HashTable* table, const void* key) {
     }
 }
 
-// Funzione per ottenere il numero di elementi
 int hash_table_size(const HashTable* table) {
 return table->size;
 }
 
-// Funzione per ottenere tutte le chiavi
 void** hash_table_keyset(const HashTable* table) {
     if (!table || table->size == 0) return NULL;
     void** keys = malloc(table->size * sizeof(void*));

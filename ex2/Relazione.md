@@ -15,11 +15,11 @@ Questo approccio riduce il tempo di esecuzione da esponenziale a quadratico, ris
 ## Risultati
 La prima soluzione, naif (ingenua), risulta essere estremamente lenta nel calcolare l'edit distance quando sono presenti tante stringhe nel dizionario.
 Utilizzando dizionario e file da correggere forniti, rispettivamente di 661562 e 49 stringhe, i risultati sono i seguenti:
--**naif**: dopo 10 minuti di esecuzione il programma avrà restituito solo il risultato della comparazione della prima stringa del file da correggere con tutto il dizionario
--**programmazione dinamica**: 1 minuto e 17 secondi
+- **naif**: dopo 10 minuti di esecuzione il programma avrà restituito solo il risultato della comparazione della prima stringa del file da correggere con tutto il dizionario
+- **programmazione dinamica**: 1 minuto e 17 secondi
 
 In caso di modifica dei file `dictionary.txt` e `correctme.txt`, riducendo significativamente il numero di stringhe, si ottengono risultati migliori con la versione naif.
 La differenza però di tempo tra le due versioni è abissale:
 con un dizionario di 20000 stringhe e un file da correggere di 20 stringhe, il programma utilizzando la funzione **naif** impiega 6.38 secondi mentre con la funzione con **programmazione dinamica** 0.39 secondi.
 
-I test sono stati effettuati con il seguente hardware Ryzen 5 5500U, scheda grafica integrata, 8gb ram, 256gb ssd
+I test sono stati effettuati con il seguente hardware: Ryzen 5 5500U, scheda grafica integrata, 8gb ram, 256gb ssd

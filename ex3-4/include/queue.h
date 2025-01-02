@@ -18,8 +18,8 @@ typedef struct queue {
  *
  * @param size The maximum number of elements the queue can hold.
  *
- * @return Pointer to the newly created queue, or NULL if allocation fails
- *         or if the size is not positive.
+ * @return Pointer to the newly created queue, NULL if the allocation fails
+ *         or the size is not positive.
  */
 Queue* queue_create(int size);
 
@@ -39,7 +39,7 @@ void queue_enqueue(Queue* queue, void* element);
  *
  * @param queue Pointer to the queue.
  *
- * @return Pointer to the dequeued element, or NULL if the queue is empty
+ * @return Pointer to the dequeued element, NULL if the queue is empty
  *         or the queue pointer is NULL.
  */
 void* queue_dequeue(Queue* queue);
@@ -49,7 +49,7 @@ void* queue_dequeue(Queue* queue);
  *
  * @param queue Pointer to the queue.
  *
- * @return Non-zero value if the queue is empty, or 0 if it contains elements.
+ * @return Non-zero value if the queue is empty, 0 if it contains elements.
  *         If the queue pointer is NULL, prints an error and returns 1.
  */
 int queue_empty(Queue* queue);

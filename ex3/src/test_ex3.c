@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-// Funzione hash per stringhe
+// Computes a hash value for a given string.
 unsigned long string_hash(const void* key) {
     const char* str = (const char*)key;
     unsigned long hash = 5381;
@@ -13,17 +13,14 @@ unsigned long string_hash(const void* key) {
     return hash;
 }
 
-// Funzione di confronto per stringhe
 int string_compare(const void* a, const void* b) {
     return strcmp((const char*)a, (const char*)b);
 }
 
 void setUp(void) {
-    // Funzione chiamata prima di ogni test
 }
 
 void tearDown(void) {
-    // Funzione chiamata dopo ogni test
 }
 
 void test_hash_table_create_and_free(void) {

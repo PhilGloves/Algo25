@@ -6,9 +6,9 @@
 /**
  * @brief Defines the structure for a graph.
  *
- * A graph consists of nodes stored in a hash table as key,
- * with the element being another hash table that contains
- * adjacent node as key and a generic pointer as element (ex. label).
+ * A graph consists of nodes stored in a hash table as keys,
+ * with each element being another hash table that contain
+ * adjacent nodes as keys and a generic pointer as the element (e.g. label).
  * It can be either directed or not, labelled or unlabelled.
  */
 struct graph {

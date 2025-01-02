@@ -3,10 +3,8 @@
 #include <string.h>
 #include "unity.h"
 
-
 #define DIRECTED 0
 
-// Funzioni di hash e compare
 int hash_table_compare_strings(const void* a, const void* b) {
     return strcmp((const char*)a, (const char*)b);
 }
@@ -71,7 +69,6 @@ void test_graph_add_edge(void) {
         TEST_ASSERT_EQUAL(1, graph_contains_edge(graph, node2, node1));
     }
     TEST_ASSERT_EQUAL_STRING("AB", graph_get_label(graph, node1, node2));
-
 }
 
 void test_graph_add_same_edge(void) {

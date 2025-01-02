@@ -3,9 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <ctype.h> // Per funzioni di controllo sui caratteri
+#include <ctype.h> //used to classify (and transform) individual characters
 
-// Funzione hash per le stringhe
+// Computes a hash value for a given string.
 unsigned long string_hash(const void* key) {
     const char* str = (const char*)key;
     unsigned long hash = 5381;
@@ -15,28 +15,27 @@ unsigned long string_hash(const void* key) {
     return hash;
 }
 
-// Funzione di confronto per le stringhe
 int string_compare(const void* a, const void* b) {
     return strcmp((const char*)a, (const char*)b);
 }
 
-// Funzione per filtrare una parola, separando parole su caratteri non alfabetici
+// Filters a word to retain only its initial alphabetical characters.
 void filter_word(char* word) {
     size_t len = strlen(word);
     size_t j = 0;
 
     for (size_t i = 0; i < len; i++) {
-        if (isalpha(word[i])) { // Controlla se il carattere è una lettera
-            word[j++] = tolower(word[i]); // Converte il carattere in minuscolo
+        if (isalpha(word[i])) {
+            word[j++] = tolower(word[i]);
         } else {
-            word[j] = '\0'; // Termina la parola corrente
-            break; // La funzione lascia che il resto venga gestito separatamente
+            word[j] = '\0';
+            break;
         }
     }
-    word[j] = '\0'; // Termina la stringa
+    word[j] = '\0';
 }
 
-// Funzione per trovare la parola più frequente con lunghezza minima
+// Finds the most frequent words in a file that meet a minimum length requirement.
 void find_most_frequent_word(const char* filename, int min_length) {
     FILE* file = fopen(filename, "r");
     if (!file) {
@@ -44,7 +43,6 @@ void find_most_frequent_word(const char* filename, int min_length) {
         return;
     }
 
-    // Creazione della hash table
     HashTable* table = hash_table_create(string_compare, string_hash);
     if (!table) {
         fclose(file);
@@ -54,18 +52,18 @@ void find_most_frequent_word(const char* filename, int min_length) {
 
     char word[256];
     while (fscanf(file, "%255s", word) != EOF) {
-        filter_word(word); // Rimuove caratteri non validi
+        filter_word(word);
 
         if (strlen(word) < (size_t)min_length) {
-            continue; // Salta le parole troppo corte
+            continue;
         }
 
-        // Cerca la parola nella hash table
+        //look up the word in the hash table
         int* count = (int*)hash_table_get(table, word);
         if (count) {
             (*count)++;
         } else {
-            // Nuova parola, aggiungila alla hash table
+            //new word to be added in the hash table
             int* new_count = malloc(sizeof(int));
             if (!new_count) {
                 fprintf(stderr, "Errore di memoria.\n");
@@ -79,7 +77,7 @@ void find_most_frequent_word(const char* filename, int min_length) {
     }
     fclose(file);
 
-    // Trova tutte le parole con il conteggio massimo
+    //finds all words with maximum count
     void** keys = hash_table_keyset(table);
     int size = hash_table_size(table);
 
@@ -105,7 +103,6 @@ void find_most_frequent_word(const char* filename, int min_length) {
         printf("Nessuna parola con lunghezza almeno %d trovata.\n", min_length);
     }
 
-    // Libera la memoria
     free(keys);
     hash_table_free(table);
 }

@@ -39,9 +39,7 @@ void load_file(Graph graph, char* infile) {
   }
   fclose(file);
 }
-
-//Start è il nodo di partenza da cui cominciare la visita, la funzione restituisce l'array dei nodi nell'ordine di visita.
-//Eventualmente, la funzione restituisce null se il nodo start non è presente nel grafo gr.
+//Performs a breadth-first traversal on a graph starting from a given node.
 void** breadth_first_visit(Graph gr, void* start, int (*compare)(const void*, const void*), unsigned long (*hash)(const void*)) {
   if (!gr || !start || !compare || !hash) {
     printf("Error bfv arguments\n");
@@ -119,7 +117,6 @@ void graph_visit(const char* infile, const char* start, const char* outfile) {
 }
 
 
-//bin/main_ex3-4 dataset/italian_dist_graph.csv pinerolo dataset/result.txt
 int main(int argc, char** argv) {
   if (argc != 4) {
     printf("Not enough arguments\n");

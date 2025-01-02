@@ -73,8 +73,6 @@ int hash_table_contains_key(const HashTable* table, const void* key);
 /**
  * @brief Removes a key-value pair from the hash table.
  *
- * Frees memory for the key and value using the provided free functions, if set.
- *
  * @param table Pointer to the hash table.
  * @param key Pointer to the key to remove.
  */
@@ -85,12 +83,12 @@ void hash_table_remove(HashTable* table, const void* key);
  *
  * @param table Pointer to the hash table.
  *
- * @return The number of elements in the hash table, or 0 if the table is NULL.
+ * @return The number of elements in the hash table, 0 if the table is NULL.
  */
 int hash_table_size(const HashTable* table);
 
 /**
- * @brief Retrieves all keys in the hash table as an array.
+ * @brief Retrieves all the keys in the hash table as an array.
  *
  * The caller is responsible for freeing the returned array.
  *
@@ -101,9 +99,9 @@ int hash_table_size(const HashTable* table);
 void** hash_table_keyset(const HashTable* table);
 
 /**
- * @brief Frees all memory associated with the hash table.
+ * @brief Frees all the memory associated with the hash table.
  *
- * This includes all buckets, keys, and values.
+ * This includes buckets, keys and values.
  *
  * @param table Pointer to the hash table to free.
  */
